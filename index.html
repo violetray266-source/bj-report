@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BJ 9개 채널 성장 리포트</title>
+<style>
+  /* ============ design tokens ============
+     layout: masthead -> KPI strip -> verdict callouts -> channel card grid (sorted by 조회수 증가율) -> two indexed trend charts -> footnotes
+     type: Noto Sans KR for every Korean/mixed-script string (headings + body, by weight) · IBM Plex Mono for every measured figure, grounding the "Studio 실측" data-authenticity theme
+  */
+  :root{
+    color-scheme: light;
+    --bg:            #f9f9f7;
+    --surface:       #fcfcfb;
+    --surface-2:     #f1f0ea;
+    --fg:            #0b0b0b;
+    --fg-secondary:  #52514e;
+    --fg-muted:      #898781;
+    --border:        rgba(11,11,11,0.10);
+    --border-strong: rgba(11,11,11,0.18);
+    --accent:        #184f95;
+    --accent-wash:   rgba(42,120,214,0.10);
+    --accent-wash-strong: rgba(42,120,214,0.16);
+
+    --good-ink:    #0a7d0a;
+    --good-wash:   rgba(12,163,12,0.12);
+    --warn-ink:    #8a5c00;
+    --warn-wash:   rgba(250,178,25,0.22);
+    --caution-ink: #ad4616;
+    --caution-wash:rgba(236,131,90,0.20);
+    --info-ink:    #3d3a86;
+    --info-wash:   rgba(74,58,167,0.12);
+
+    --up:   #0a7d0a;
+    --down: #c0392f;
+
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+    --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+
+    --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 8px 24px -16px rgba(11,11,11,0.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:            #0d0d0d;
+      --surface:       #1a1a19;
+      --surface-2:     #222220;
+      --fg:            #ffffff;
+      --fg-secondary:  #c3c2b7;
+      --fg-muted:      #8d8c86;
+      --border:        rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.18);
+      --accent:        #6fa2e8;
+      --accent-wash:   rgba(57,135,229,0.16);
+      --accent-wash-strong: rgba(57,135,229,0.24);
+
+      --good-ink:    #3fcf3f;
+      --good-wash:   rgba(12,163,12,0.22);
+      --warn-ink:    #f2c04e;
+      --warn-wash:   rgba(250,178,25,0.20);
+      --caution-ink: #ff9466;
+      --caution-wash:rgba(236,131,90,0.22);
+      --info-ink:    #b6aef2;
+      --info-wash:   rgba(144,133,233,0.20);
+
+      --up:   #3fcf3f;
+      --down: #ff8a7a;
+
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+      --s5:#d55181; --s6:#2bb82b; --s7:#9085e9; --s8:#e66767;
+
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -16px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:            #0d0d0d;
+    --surface:       #1a1a19;
+    --surface-2:     #222220;
+    --fg:            #ffffff;
+    --fg-secondary:  #c3c2b7;
+    --fg-muted:      #8d8c86;
+    --border:        rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --accent:        #6fa2e8;
+    --accent-wash:   rgba(57,135,229,0.16);
+    --accent-wash-strong: rgba(57,135,229,0.24);
+
+    --good-ink:    #3fcf3f;
+    --good-wash:   rgba(12,163,12,0.22);
+    --warn-ink:    #f2c04e;
+    --warn-wash:   rgba(250,178,25,0.20);
+    --caution-ink: #ff9466;
+    --caution-wash:rgba(236,131,90,0.22);
+    --info-ink:    #b6aef2;
+    --info-wash:   rgba(144,133,233,0.20);
+
+    --up:   #3fcf3f;
+    --down: #ff8a7a;
+
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --s5:#d55181; --s6:#2bb82b; --s7:#9085e9; --s8:#e66767;
+
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -16px rgba(0,0,0,0.6);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:"Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding-inline:16px;
+  }
+  .num{font-family:"IBM Plex Mono","Noto Sans KR",monospace; font-variant-numeric:tabular-nums;}
+  .page{max-width:1180px;margin:0 auto;padding-block:40px 56px;display:flex;flex-direction:column;gap:40px;}
+
+  /* ---- masthead ---- */
+  .masthead{display:flex;flex-direction:column;gap:10px;padding-bottom:28px;border-bottom:1px solid var(--border-strong);}
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;}
+  h1{font-size:clamp(26px,4.4vw,38px);line-height:1.18;font-weight:900;margin:0;text-wrap:balance;}
+  .masthead p{margin:0;color:var(--fg-secondary);font-size:14.5px;line-height:1.6;max-width:70ch;}
+  .meta-row{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:4px;}
+  .meta-chip{font-size:12px;color:var(--fg-muted);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
+  .meta-chip[data-state="live"]{color:var(--good-ink);background:var(--good-wash);border-color:transparent;}
+  .meta-chip[data-state="offline"]{color:var(--caution-ink);background:var(--caution-wash);border-color:transparent;}
+
+  /* ---- section heading ---- */
+  .section-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:16px;}
+  .section-head h2{font-size:19px;font-weight:700;margin:0;}
+  .section-head .note{font-size:12.5px;color:var(--fg-muted);}
+  .section-sub{margin:-8px 0 18px;color:var(--fg-secondary);font-size:13.5px;}
+
+  /* ---- KPI cards ---- */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;min-width:0;}
+  .kpi-label{font-size:12.5px;color:var(--fg-muted);line-height:1.45;}
+  .kpi-value{font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.25;}
+  .kpi-value .arrow{color:var(--fg-muted);font-weight:400;margin:0 2px;}
+  .kpi-delta{font-size:14px;font-weight:600;width:fit-content;padding:2px 9px;border-radius:999px;}
+  .kpi-delta.up{color:var(--good-ink);background:var(--good-wash);}
+  .kpi-delta.down{color:var(--down);background:rgba(192,57,47,0.12);}
+
+  /* ---- verdict callouts ---- */
+  .verdict-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .verdict-list li{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:13px 16px;font-size:14.5px;line-height:1.65;color:var(--fg-secondary);}
+  .verdict-list li strong{color:var(--fg);font-weight:600;}
+  .verdict-list li[data-tone="caution"]{border-left-color:var(--caution-ink);}
+  .verdict-list li[data-tone="warn"]{border-left-color:var(--warn-ink);}
+  .verdict-list li .num{color:var(--fg);font-weight:600;}
+
+  /* ---- channel cards ---- */
+  .legend-note{font-size:12.5px;color:var(--fg-muted);margin:-8px 0 16px;}
+  .channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+  .ch-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .ch-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .ch-name{font-size:16px;font-weight:700;min-width:0;overflow-wrap:break-word;}
+  .ch-name .star{color:var(--fg-muted);font-weight:400;}
+  .grade-badge{flex:none;font-size:12.5px;font-weight:700;padding:3px 11px;border-radius:999px;white-space:nowrap;}
+  .grade-badge[data-grade="상"]{color:var(--good-ink);background:var(--good-wash);}
+  .grade-badge[data-grade="중"]{color:var(--warn-ink);background:var(--warn-wash);}
+  .grade-badge[data-grade="주의"]{color:var(--caution-ink);background:var(--caution-wash);}
+
+  .ch-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;}
+  .metric{min-width:0;}
+  .metric .m-label{font-size:11.5px;color:var(--fg-muted);margin-bottom:3px;}
+  .metric .m-value{font-size:13.5px;font-weight:500;}
+  .metric .m-value .arrow{color:var(--fg-muted);font-weight:400;}
+  .metric .m-delta{display:inline-block;margin-top:2px;font-size:12.5px;font-weight:600;}
+  .metric .m-delta.up{color:var(--up);}
+  .metric .m-delta.down{color:var(--down);}
+  .metric.span2{grid-column:1 / -1;display:flex;gap:18px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px;}
+
+  .ch-reason{font-size:12.8px;line-height:1.65;color:var(--fg-secondary);border-top:1px solid var(--border);padding-top:11px;}
+
+  .footnote{font-size:12px;color:var(--fg-muted);line-height:1.6;margin:6px 0 0;}
+
+  /* ---- charts ---- */
+  .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px;}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 18px 10px;box-shadow:var(--shadow);min-width:0;}
+  .chart-card h3{font-size:14.5px;font-weight:700;margin:0 0 2px;}
+  .chart-card .chart-sub{font-size:12px;color:var(--fg-muted);margin:0 0 10px;}
+  .chart-wrap{position:relative;width:100%;}
+  .chart-wrap svg{width:100%;height:auto;display:block;overflow:visible;}
+  .grid-line{stroke:var(--border);stroke-width:1;}
+  .axis-text{fill:var(--fg-muted);font-size:10.5px;font-family:"IBM Plex Mono",monospace;}
+  .axis-text.cat{font-family:"Noto Sans KR",sans-serif;fill:var(--fg-secondary);}
+  .series-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .series-dot{stroke-width:2;}
+  .end-label{font-size:11px;font-weight:600;font-family:"IBM Plex Mono",monospace;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:7px 14px;padding:12px 2px 6px;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-secondary);cursor:pointer;user-select:none;padding:2px 4px;border-radius:6px;}
+  .legend-item:hover{background:var(--surface-2);}
+  .legend-item.dim{opacity:.35;}
+  .legend-swatch{width:10px;height:10px;border-radius:3px;flex:none;}
+
+  .tooltip{
+    position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border-strong);
+    border-radius:10px;padding:9px 11px;font-size:12px;box-shadow:var(--shadow);min-width:168px;
+    opacity:0;transform:translate(-50%,-100%);transition:opacity .08s ease;z-index:5;
+  }
+  .tooltip.show{opacity:1;}
+  .tooltip .tt-head{font-weight:700;margin-bottom:5px;color:var(--fg);font-family:"Noto Sans KR",sans-serif;}
+  .tooltip .tt-row{display:flex;align-items:center;gap:6px;justify-content:space-between;padding:1.5px 0;}
+  .tooltip .tt-row .tt-name{display:flex;align-items:center;gap:5px;color:var(--fg-secondary);min-width:0;}
+  .tooltip .tt-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .tooltip .tt-val{font-family:"IBM Plex Mono",monospace;color:var(--fg);flex:none;}
+
+  footer{border-top:1px solid var(--border-strong);padding-top:18px;display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;color:var(--fg-muted);font-size:12px;}
+
+  @media (max-width: 560px){
+    .ch-metrics{grid-template-columns:1fr;}
+    .metric.span2{flex-direction:column;gap:8px;}
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">DPOT · YouTube Studio 실측 데이터</span>
+    <h1>BJ 9개 채널 성장 가능성 리포트</h1>
+    <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 · Studio 실측 8개 채널 + 실측 1개 채널(진혁쓰 JINHYUKss, 전환 12일차)</p>
+    <div class="meta-row">
+      <span class="meta-chip" id="meta-asof-chip">데이터 조사 기준 ~2026-10-01</span>
+      <span class="meta-chip" id="meta-updated-chip">최신화 2026-10-02</span>
+      <span class="meta-chip">추정·반올림 값 없음 — 전량 Studio 실측</span>
+      <span class="meta-chip" id="meta-live-chip" hidden></span>
+    </div>
+  </header>
+
+  <section aria-label="전체 요약">
+    <div class="section-head">
+      <h2>전체 요약</h2>
+      <span class="note">Studio 실측 8개 채널 합산 · 진혁쓰 JINHYUKss 제외</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">합산 구독자 (리니지 전 → 현재)</div>
+        <div class="kpi-value num" id="kpi-subs-val">127,001 <span class="arrow">→</span> 133,144</div>
+        <span class="kpi-delta up" id="kpi-subs-delta">+4.8%</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">합산 조회수 (리니지 전 41일 → 후 40일)</div>
+        <div class="kpi-value num" id="kpi-views-val">879,031 <span class="arrow">→</span> 2,937,023</div>
+        <span class="kpi-delta up" id="kpi-views-delta">+234%</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">합산 시청시간 h (전 → 후)</div>
+        <div class="kpi-value num" id="kpi-watch-val">101,538 <span class="arrow">→</span> 294,208</div>
+        <span class="kpi-delta up" id="kpi-watch-delta">+190%</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">최근 30일 조회수 (직전 30일 → 최근 30일)</div>
+        <div class="kpi-value num" id="kpi-recent-val">1,827,497 <span class="arrow">→</span> 1,998,737</div>
+        <span class="kpi-delta up" id="kpi-recent-delta">+9%</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="종합 판단">
+    <div class="section-head"><h2>종합 판단</h2></div>
+    <ul class="verdict-list" id="verdict-list">
+      <li>리니지 클래식 전환 후 8개 채널(대박TV·홍백티비·돌벅지·불멸자·깡별·꽃태자·김외창·야광TV) 합산 구독자는 <span class="num">127,001명 → 133,144명</span>으로 <strong class="num">+6,143명(+4.8%)</strong> 증가, 합산 조회수는 <span class="num">879,031회 → 2,937,023회(+234%)</span>, 시청시간은 <strong class="num">+190%</strong> 증가 — 게임 전환 효과가 구독자·조회수·시청시간 전 지표에서 뚜렷하게 확인됨.</li>
+      <li data-tone="caution">대박TV는 조회수 증가율이 가장 높은 채널 중 하나였음에도 최근 30일 구독자가 <strong class="num">-102명</strong>으로 8개 채널 중 유일하게 순감소(최근 30일 조회수도 직전 30일 대비 <strong class="num">-32.3%</strong>로 8개 채널 중 가장 큰 폭으로 감소) — 별도 점검이 필요함.</li>
+      <li>돌벅지·홍백티비·불멸자·김외창은 구독자·조회수가 함께 늘며 최근까지 성장이 가속 중이라 성장 가능성이 가장 높고, 특히 돌벅지는 구독자 증가율(<strong class="num">+21.2%</strong>), 김외창은 조회수 증가율(<strong class="num">+3158%</strong>)이 8개 채널 중 각각 최대. 꽃태자는 이미 최대 규모 채널로 최근 30일 조회수가 소폭 둔화(<strong class="num">-2.4%</strong>)되어 성장보다 안정·유지 단계로 판단됨.</li>
+    </ul>
+  </section>
+
+  <section aria-label="채널별 성장 가능성 평가">
+    <div class="section-head"><h2>채널별 성장 가능성 평가</h2></div>
+    <p class="legend-note">조회수 증가율(리니지 전 → 후) 기준 내림차순 · 구독자 수치는 현재(10/2) 스냅샷에서 실측 순증분을 역산한 리니지 전 추정 시점 기준</p>
+
+    <div class="channel-grid" id="channel-grid"></div>
+
+    <p class="footnote">※ &lsquo;리니지 전&rsquo; 구독자수는 현재(10/2 기준) 구독자수에서 리니지 시작일~최신 데이터일 구간의 실측 순증분을 역산한 값(전환 전일 시점 추정, 대부분의 채널은 8/12 기준). 성장 가능성 평가는 (1)구독자가 실제로 늘고 있는지 (2)리니지 전후 조회수 증가율 (3)가장 최근 30일의 조회수·구독자 흐름, 3가지를 종합해 판단함.</p>
+    <p class="footnote">※ (*) 진혁쓰 JINHYUKss는 9/28 Studio 관리자 권한이 확보되어 실측 데이터로 전환됨. 리니지 클래식 시작일이 9/20으로 다른 채널보다 8일 늦어 &lsquo;리니지 전&rsquo; 구독자수는 9/19 시점 기준이며, 조회수 비교도 41일/40일이 아닌 전후 각 12일(9/8~9/19 vs 9/20~10/1) 구간을 사용함. 최근 30일 지표는 전환 전후 구간이 혼재(9/2~9/19 전환 전, 9/20~10/1 전환 후)되어 순수한 전환 이후 흐름과는 차이가 있을 수 있음.</p>
+  </section>
+
+  <section aria-label="성장 추이">
+    <div class="section-head"><h2>성장 추이</h2></div>
+    <p class="section-sub">각 채널의 시작 시점을 100으로 두고 이후 변화를 지수화 — 선이 올라가면 증가, 내려가면 감소 추세. 범례를 클릭하면 해당 채널만 강조됩니다.</p>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>구독자 수 지수 추이 (시작 = 100)</h3>
+        <p class="chart-sub">조사 시작(7/3) → 리니지 시작(8/12) → 9/1 → 현재(10/2)</p>
+        <div class="chart-wrap" id="wrap-subs"></div>
+      </div>
+      <div class="chart-card">
+        <h3>조회수(일평균) 지수 추이 — 로그축</h3>
+        <p class="chart-sub">리니지 전 41일(7/3~8/12) = 100 → 후 40일(8/13~9/21) → 최근 30일(9/2~10/1)</p>
+        <div class="chart-wrap" id="wrap-views"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>출처: YouTube Studio Advanced Mode (사용자 지정 기간 합계) · 전 채널 실측값, 추정·보간 없음</span>
+    <span>BJ성장지표_Studio데이터_최종.xlsx 와 동일한 수치를 사용한 HTML 버전</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CHANNELS = ["대박TV","홍백티비","돌벅지","불멸자","깡별","꽃태자","김외창","야광TV"];
+  var COLORS = {
+    "대박TV":"var(--s1)", "홍백티비":"var(--s2)", "돌벅지":"var(--s3)", "불멸자":"var(--s4)",
+    "깡별":"var(--s5)", "꽃태자":"var(--s6)", "김외창":"var(--s7)", "야광TV":"var(--s8)"
+  };
+  // resolved hex (light/dark aware) read at draw-time from computed style
+  function resolveColor(varExpr){
+    var m = /var\((--[a-z0-9]+)\)/.exec(varExpr);
+    if(!m) return varExpr;
+    return getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
+  }
+
+  var FALLBACK_SUBS_LABELS = ["조사 시작|(7/3)","리니지 시작|(8/12)","9/1","현재|(10/2)"];
+  var FALLBACK_SUBS_SERIES = {
+    "대박TV":[100.0,103.8,109.0,108.7],
+    "홍백티비":[100.0,98.4,101.9,105.0],
+    "돌벅지":[100.0,99.9,117.8,121.1],
+    "불멸자":[100.0,99.7,102.9,103.4],
+    "깡별":[100.0,99.6,101.0,101.5],
+    "꽃태자":[100.0,101.8,106.6,107.3],
+    "김외창":[100.0,100.1,105.0,105.2],
+    "야광TV":[100.0,99.9,100.7,101.2]
+  };
+
+  var FALLBACK_VIEWS_LABELS = ["리니지 전 41일|(7/3~8/12)","리니지 후 40일|(8/13~9/21)","최근 30일|(9/2~10/1)"];
+  var FALLBACK_VIEWS_SERIES = {
+    "대박TV":[100.0,1826.5,1105.8],
+    "홍백티비":[100.0,1491.6,1377.9],
+    "돌벅지":[100.0,2395.7,2866.8],
+    "불멸자":[100.0,3278.2,3576.8],
+    "깡별":[100.0,365.3,567.7],
+    "꽃태자":[100.0,173.5,161.7],
+    "김외창":[100.0,3339.4,2411.2],
+    "야광TV":[100.0,437.1,629.9]
+  };
+
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs){
+    var e = document.createElementNS(NS, tag);
+    for(var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function niceLinearTicks(min, max, count){
+    var span = max - min;
+    var step = span / (count - 1);
+    var mag = Math.pow(10, Math.floor(Math.log10(step || 1)));
+    var norm = step / mag;
+    var niceNorm = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+    step = niceNorm * mag;
+    var start = Math.floor(min / step) * step;
+    var ticks = [];
+    for(var v = start; v <= max + step * 0.001; v += step) ticks.push(Math.round(v*10)/10);
+    return ticks;
+  }
+
+  function buildChart(opts){
+    // opts: wrapId, labels, series(map name->values), log(bool), yDomain?, suffix
+    var W = 640, H = 340;
+    var padL = 46, padR = 16, padT = 14, padB = 42;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var wrap = document.getElementById(opts.wrapId);
+    var svg = el("svg", {viewBox:"0 0 "+W+" "+H, "aria-hidden":"true"});
+    wrap.appendChild(svg);
+
+    var n = opts.labels.length;
+    function xAt(i){ return padL + (n===1?0:(plotW * i/(n-1))); }
+
+    var allVals = [];
+    CHANNELS.forEach(function(ch){ opts.series[ch].forEach(function(v){allVals.push(v);}); });
+    var minV = Math.min.apply(null, allVals), maxV = Math.max.apply(null, allVals);
+
+    var yTicks, yMin, yMax, yPos;
+    if(opts.log){
+      yMin = Math.pow(10, Math.floor(Math.log10(minV)));
+      yMax = Math.pow(10, Math.ceil(Math.log10(maxV)));
+      yTicks = [];
+      for(var p = yMin; p <= yMax*1.0001; p *= 10){
+        yTicks.push(p);
+        if(p < yMax) yTicks.push(p*2, p*5);
+      }
+      yTicks = yTicks.filter(function(t){return t>=yMin*0.999 && t<=yMax*1.001;}).sort(function(a,b){return a-b;});
+      yPos = function(v){ return padT + plotH - (Math.log10(v)-Math.log10(yMin))/(Math.log10(yMax)-Math.log10(yMin))*plotH; };
+    } else {
+      var pad = (maxV-minV)*0.12 || 5;
+      yTicks = niceLinearTicks(minV-pad, maxV+pad, 5);
+      yMin = yTicks[0]; yMax = yTicks[yTicks.length-1];
+      yPos = function(v){ return padT + plotH - (v-yMin)/(yMax-yMin)*plotH; };
+    }
+
+    // gridlines + y labels
+    yTicks.forEach(function(t){
+      var y = yPos(t);
+      svg.appendChild(el("line", {x1:padL, x2:W-padR, y1:y, y2:y, class:"grid-line"}));
+      var txt = el("text", {x:padL-8, y:y+3, "text-anchor":"end", class:"axis-text"});
+      txt.textContent = (t>=100? Math.round(t).toLocaleString() : (Math.round(t*10)/10));
+      svg.appendChild(txt);
+    });
+
+    // x labels (multi-line support)
+    opts.labels.forEach(function(lab, i){
+      var x = xAt(i);
+      svg.appendChild(el("line", {x1:x, x2:x, y1:padT, y2:H-padB+4, class:"grid-line", opacity:"0.5"}));
+      var lines = lab.split("|");
+      lines.forEach(function(ln, li){
+        var txt = el("text", {x:x, y:H-padB+16+li*11, "text-anchor":"middle", class:"axis-text cat"});
+        txt.textContent = ln;
+        svg.appendChild(txt);
+      });
+    });
+
+    var seriesEls = {};
+    CHANNELS.forEach(function(ch, idx){
+      var vals = opts.series[ch];
+      var color = resolveColor(COLORS[ch]);
+      var d = vals.map(function(v,i){ return (i===0?"M":"L")+xAt(i).toFixed(2)+","+yPos(v).toFixed(2); }).join(" ");
+      var g = el("g", {"data-ch":ch});
+      var path = el("path", {d:d, class:"series-line", stroke:color});
+      g.appendChild(path);
+      var dots = [];
+      vals.forEach(function(v,i){
+        var dot = el("circle", {cx:xAt(i), cy:yPos(v), r:4.5, class:"series-dot", fill:color, stroke:"var(--surface)"});
+        dot.setAttribute("stroke", resolveColor("var(--surface)"));
+        g.appendChild(dot);
+        dots.push(dot);
+      });
+      svg.appendChild(g);
+      seriesEls[ch] = {g:g, path:path, dots:dots, vals:vals, color:color};
+    });
+
+    // sparing direct end-labels: top & bottom series only (the extremes = the story)
+    var lastVals = CHANNELS.map(function(ch){ return {ch:ch, v:opts.series[ch][n-1]}; });
+    lastVals.sort(function(a,b){ return b.v-a.v; });
+    [lastVals[0], lastVals[lastVals.length-1]].forEach(function(item, k){
+      if(!item) return;
+      var x = xAt(n-1), y = yPos(item.v);
+      var dy = k===0 ? -9 : 14;
+      var txt = el("text", {x:x+7, y:y+dy, class:"end-label", fill: resolveColor(COLORS[item.ch])});
+      txt.textContent = (opts.log? Math.round(item.v) : item.v.toFixed(1));
+      svg.appendChild(txt);
+    });
+
+    // hover crosshair + hit targets
+    var cross = el("line", {x1:0,x2:0,y1:padT,y2:H-padB, stroke:"var(--border-strong)", "stroke-width":1, "stroke-dasharray":"3,3", opacity:"0"});
+    svg.appendChild(cross);
+    var hit = el("rect", {x:padL, y:padT, width:plotW, height:plotH, fill:"transparent", style:"cursor:crosshair"});
+    svg.appendChild(hit);
+
+    var tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    wrap.style.position = "relative";
+    wrap.appendChild(tooltip);
+
+    function showAt(i, clientX, clientY){
+      var x = xAt(i);
+      cross.setAttribute("x1", x); cross.setAttribute("x2", x); cross.setAttribute("opacity","1");
+      var rows = CHANNELS.map(function(ch){ return {ch:ch, v:opts.series[ch][i], color:resolveColor(COLORS[ch])}; });
+      rows.sort(function(a,b){ return b.v - a.v; });
+      var html = '<div class="tt-head">'+opts.labels[i].replace(/\|/g," ")+'</div>';
+      rows.forEach(function(r){
+        html += '<div class="tt-row"><span class="tt-name"><span class="tt-dot" style="background:'+r.color+'"></span>'+r.ch+'</span><span class="tt-val">'+(opts.log? Math.round(r.v) : r.v.toFixed(1))+'</span></div>';
+      });
+      tooltip.innerHTML = html;
+      var rect = wrap.getBoundingClientRect();
+      var svgRect = svg.getBoundingClientRect();
+      var scale = svgRect.width / W;
+      var left = (x*scale) + (svgRect.left - rect.left);
+      var top = (padT*scale) + (svgRect.top - rect.top);
+      tooltip.style.left = left+"px";
+      tooltip.style.top = Math.max(top,10)+"px";
+      tooltip.classList.add("show");
+    }
+    function hide(){ cross.setAttribute("opacity","0"); tooltip.classList.remove("show"); }
+
+    function nearestIndex(clientX){
+      var svgRect = svg.getBoundingClientRect();
+      var scale = svgRect.width / W;
+      var localX = (clientX - svgRect.left) / scale;
+      var best = 0, bestD = Infinity;
+      for(var i=0;i<n;i++){ var d = Math.abs(xAt(i)-localX); if(d<bestD){bestD=d; best=i;} }
+      return best;
+    }
+    hit.addEventListener("mousemove", function(e){ showAt(nearestIndex(e.clientX), e.clientX, e.clientY); });
+    hit.addEventListener("mouseleave", hide);
+    hit.addEventListener("touchstart", function(e){ var t=e.touches[0]; showAt(nearestIndex(t.clientX), t.clientX, t.clientY); }, {passive:true});
+    hit.addEventListener("touchmove", function(e){ var t=e.touches[0]; showAt(nearestIndex(t.clientX), t.clientX, t.clientY); }, {passive:true});
+    hit.addEventListener("touchend", hide);
+
+    return {seriesEls:seriesEls};
+  }
+
+  function buildLegend(containerWrapId, chartHandle, legendElId){
+    var legendEl = document.getElementById(legendElId);
+    CHANNELS.forEach(function(ch){
+      var item = document.createElement("span");
+      item.className = "legend-item";
+      var sw = document.createElement("span");
+      sw.className = "legend-swatch";
+      sw.style.background = resolveColor(COLORS[ch]);
+      item.appendChild(sw);
+      var label = document.createElement("span");
+      label.textContent = ch;
+      item.appendChild(label);
+      item.addEventListener("click", function(){
+        var se = chartHandle.seriesEls[ch];
+        var dimmed = item.classList.toggle("dim");
+        se.g.style.opacity = dimmed ? "0.15" : "1";
+      });
+      legendEl.appendChild(item);
+    });
+  }
+
+  var FALLBACK_CARDS = [
+    {ch:"김외창", grade:"상", subBefore:6057, subNow:6366, subGrowth:309, subPct:5.1,
+     viewBefore:8849, viewAfter:288294, viewPct:3158, momPct:2, momSub:13,
+     reason:"8개 채널 중 조회수 증가율 최대(+3158%, 8,849→288,294회) — 전환 전에는 사실상 활동이 미미했던 채널이 전환 후 가장 극적으로 반등. 최근 30일 구독자 순증은 +13명으로 둔화되었으나 누적으로는 +309명(+5.1%) 순증을 유지 중"},
+    {ch:"불멸자", grade:"상", subBefore:26497, subNow:27479, subGrowth:982, subPct:3.7,
+     viewBefore:9844, viewAfter:314833, viewPct:3098, momPct:69, momSub:135,
+     reason:"조회수 증가폭이 매우 크고(+3098%), 최근 30일도 +68.9% 고성장 중이며 구독자도 최근 30일 +135명으로 꾸준히 순증"},
+    {ch:"돌벅지", grade:"상", subBefore:1120, subNow:1357, subGrowth:237, subPct:21.2,
+     viewBefore:5216, viewAfter:121914, viewPct:2237, momPct:83, momSub:36,
+     reason:"8개 채널 중 구독자 증가율 최대(+21.2%, 1,120→1,357명). 조회수도 최근 30일 +82.7%로 가속 — 소형 채널이지만 성장 탄력이 가장 뚜렷함"},
+    {ch:"대박TV", grade:"주의", subBefore:32320, subNow:33853, subGrowth:1533, subPct:4.7,
+     viewBefore:21318, viewAfter:379882, viewPct:1682, momPct:-32, momSub:-102,
+     reason:"조회수는 전환 직후 폭발적 증가(+1682%)했으나 최근 30일 구독자가 -102명 순감소해 8개 채널 중 유일하게 구독자 이탈 중. 최근 30일 조회수도 직전 30일 대비 -32.3%로 뚜렷한 둔화세 — 초기 임팩트 이후 동력 재점검 필요"},
+    {ch:"홍백티비", grade:"상", subBefore:15914, subNow:16990, subGrowth:1076, subPct:6.8,
+     viewBefore:29985, viewAfter:436350, viewPct:1355, momPct:39, momSub:506,
+     reason:"리니지 전 구독자가 줄던 채널(41일간 -260명)이었으나 전환 후 뚜렷이 반등(누적 +1,076명, +6.8%). 최근 30일에도 조회수 +38.5%, 구독자 +506명으로 성장 지속"},
+    {ch:"야광TV", grade:"중", subBefore:6074, subNow:6155, subGrowth:81, subPct:1.3,
+     viewBefore:8854, viewAfter:37759, viewPct:326, momPct:87, momSub:32,
+     reason:"구독자·조회수 모두 플러스 성장(+1.3%, +327%)이며 최근 30일에도 조회수 +87.0%, 구독자 +32명으로 꾸준함. 다만 채널 규모가 작고(구독자 6,155명) 구독자 증가폭(+81명)이 8개 채널 중 가장 작아 절대적 영향은 제한적"},
+    {ch:"깡별", grade:"중", subBefore:4786, subNow:4876, subGrowth:90, subPct:1.9,
+     viewBefore:6551, viewAfter:23346, viewPct:256, momPct:128, momSub:22,
+     reason:"구독자·조회수 모두 플러스 성장(+1.9%, +256%)이나 채널 규모가 작고(구독자 4,876명) 증가폭도 작아(8개 채널 중 하위권) 절대적 영향은 제한적"},
+    {ch:"꽃태자", grade:"중", subBefore:34233, subNow:36068, subGrowth:1835, subPct:5.4,
+     viewBefore:788414, viewAfter:1334645, viewPct:69, momPct:-2, momSub:221,
+     reason:"이미 8개 채널 중 최대 규모(구독자 36,068명)로 증가율은 낮으나(+5.4%, +69%) 절대 증가폭은 상당함(+1,835명). 최근 30일 조회수는 직전 대비 -2.4%로 둔화 전환 — 성장보다 안정·유지 단계로 판단"},
+    {ch:"진혁쓰 JINHYUKss", star:true, grade:"주의", subBefore:42633, subNow:42672, subGrowth:39, subPct:0.1,
+     viewBefore:107459, viewAfter:159738, viewPct:49, momPct:-9, momSub:-119, periodNote:"(전후 각 12일 비교)",
+     reason:"리니지 클래식 전환일이 9/20으로 다른 채널보다 8일 늦어 조회수는 41일/40일 대신 전후 각 12일(9/8~9/19 vs 9/20~10/1) 비교 기준 107,459회→159,738회(+49%)로 증가했고, 전환 후 12일간 구독자도 +39명 순증해 전환 직전(-98명, 감소세)에서 반등함. 다만 최근 30일(9/2~10/1, 전환 전후 구간 혼재) 기준으로는 여전히 -119명 순감소 — 반등 신호는 있으나 구독자 순증 전환은 아직 확인되지 않아 당분간 추가 관찰 필요"}
+  ];
+
+  var FALLBACK_KPIS = {
+    subs:{before:127001, now:133144, pct:4.8},
+    views:{before:879031, after:2937023, pct:234},
+    watch:{before:101538, after:294208, pct:190},
+    recentViews:{before:1827497, after:1998737, pct:9}
+  };
+  var FALLBACK_META = {asOf:"2026-10-01", updated:"2026-10-02"};
+
+  function fmt(n){ return Number(n).toLocaleString("en-US"); }
+  function signed(n, unit){ unit = unit||""; return (n>=0?"+":"")+fmt(n)+unit; }
+  function pctStr(n, decimals){ var s = Number(n).toFixed(decimals==null?0:decimals); return (n>=0?"+":"")+s+"%"; }
+
+  // ---------------- renderers (called once on load with fallback data, called again if live sheet data arrives) ----------------
+  var chartHandles = {};
+
+  function ensureLegendHost(wrapId, legendElId){
+    if(document.getElementById(legendElId)) return;
+    var host = document.createElement("div");
+    host.className = "legend"; host.id = legendElId;
+    document.getElementById(wrapId).insertAdjacentElement("afterend", host);
+  }
+
+  function renderCharts(subsLabels, subsSeries, viewsLabels, viewsSeries){
+    ensureLegendHost("wrap-subs", "legend-subs-x");
+    ensureLegendHost("wrap-views", "legend-views-x");
+    ["wrap-subs","legend-subs-x","wrap-views","legend-views-x"].forEach(function(id){
+      var n = document.getElementById(id);
+      if(n) n.innerHTML = "";
+    });
+    var subsChart = buildChart({wrapId:"wrap-subs", labels:subsLabels, series:subsSeries, log:false});
+    buildLegend("wrap-subs", subsChart, "legend-subs-x");
+    var viewsChart = buildChart({wrapId:"wrap-views", labels:viewsLabels, series:viewsSeries, log:true});
+    buildLegend("wrap-views", viewsChart, "legend-views-x");
+    chartHandles = {subs:subsChart, views:viewsChart};
+  }
+
+  function renderCards(cards){
+    var sorted = cards.slice().sort(function(a,b){ return b.viewPct - a.viewPct; });
+    var grid = document.getElementById("channel-grid");
+    grid.innerHTML = "";
+    sorted.forEach(function(d){
+      var card = document.createElement("div");
+      card.className = "ch-card";
+      card.setAttribute("data-grade", d.grade);
+
+      card.innerHTML =
+        '<div class="ch-head">'+
+          '<span class="ch-name">'+d.ch.replace(" JINHYUKss"," <span class='star'>JINHYUKss *</span>")+'</span>'+
+          '<span class="grade-badge" data-grade="'+d.grade+'">'+d.grade+'</span>'+
+        '</div>'+
+        '<div class="ch-metrics">'+
+          '<div class="metric">'+
+            '<div class="m-label">구독자 (리니지 전 → 현재)</div>'+
+            '<div class="m-value num">'+fmt(d.subBefore)+' <span class="arrow">→</span> '+fmt(d.subNow)+'</div>'+
+            '<span class="m-delta '+(d.subGrowth>=0?"up":"down")+' num">'+signed(d.subGrowth,"명")+' ('+pctStr(d.subPct,1)+')</span>'+
+          '</div>'+
+          '<div class="metric">'+
+            '<div class="m-label">조회수 '+(d.periodNote? d.periodNote : "(전 41일 → 후 40일)")+'</div>'+
+            '<div class="m-value num">'+fmt(d.viewBefore)+' <span class="arrow">→</span> '+fmt(d.viewAfter)+'</div>'+
+            '<span class="m-delta up num">'+pctStr(d.viewPct,0)+'</span>'+
+          '</div>'+
+          '<div class="metric span2">'+
+            '<div><div class="m-label">최근 30일 조회수 증감률</div><span class="m-delta '+(d.momPct>=0?"up":"down")+' num">'+pctStr(d.momPct,0)+'</span></div>'+
+            '<div><div class="m-label">최근 30일 구독자 순증</div><span class="m-delta '+(d.momSub>=0?"up":"down")+' num">'+signed(d.momSub,"명")+'</span></div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="ch-reason">'+d.reason+'</div>';
+
+      grid.appendChild(card);
+    });
+  }
+
+  function renderKPIs(kpis){
+    function set(prefix, before, after, pct, decimals){
+      var v = document.getElementById(prefix+"-val");
+      var d = document.getElementById(prefix+"-delta");
+      if(v) v.innerHTML = fmt(before)+' <span class="arrow">→</span> '+fmt(after);
+      if(d){ d.textContent = pctStr(pct, decimals); d.className = "kpi-delta " + (pct>=0?"up":"down"); }
+    }
+    set("kpi-subs", kpis.subs.before, kpis.subs.now, kpis.subs.pct, 1);
+    set("kpi-views", kpis.views.before, kpis.views.after, kpis.views.pct, 0);
+    set("kpi-watch", kpis.watch.before, kpis.watch.after, kpis.watch.pct, 0);
+    set("kpi-recent", kpis.recentViews.before, kpis.recentViews.after, kpis.recentViews.pct, 0);
+  }
+
+  function renderVerdict(verdict, verdictTone){
+    var ul = document.getElementById("verdict-list");
+    if(!ul || !verdict) return;
+    ul.innerHTML = verdict.map(function(text, i){
+      var tone = (verdictTone && verdictTone[i]) ? ' data-tone="'+verdictTone[i]+'"' : "";
+      return "<li"+tone+">"+text+"</li>";
+    }).join("");
+  }
+
+  function renderMeta(meta){
+    var a = document.getElementById("meta-asof-chip");
+    var u = document.getElementById("meta-updated-chip");
+    if(a && meta.asOf) a.textContent = "데이터 조사 기준 ~"+meta.asOf;
+    if(u && meta.updated) u.textContent = "최신화 "+meta.updated;
+  }
+
+  function renderAll(data){
+    renderCharts(data.subsLabels, data.subsSeries, data.viewsLabels, data.viewsSeries);
+    renderCards(data.cards);
+    renderKPIs(data.kpis);
+    renderVerdict(data.verdict, data.verdictTone);
+    renderMeta(data.meta);
+  }
+
+  // initial paint: fallback data baked in at distribution time, so the file works fully offline
+  renderAll({
+    subsLabels: FALLBACK_SUBS_LABELS, subsSeries: FALLBACK_SUBS_SERIES,
+    viewsLabels: FALLBACK_VIEWS_LABELS, viewsSeries: FALLBACK_VIEWS_SERIES,
+    cards: FALLBACK_CARDS, kpis: FALLBACK_KPIS, meta: FALLBACK_META
+    // verdict/verdictTone omitted on purpose: the static HTML already shows the fallback wording, untouched
+  });
+
+  // ---------------- live data: fetch the latest figures from a published Google Sheet whenever this file is opened ----------------
+  // Updated daily by re-entering one JSON cell in that sheet — this HTML file itself never needs to be re-sent.
+  var SHEET_ID = "1MEy-WE0gGWYqJPFQAXaF-11DYKSWnq514izLbbM3mdY";
+  var SHEET_RANGE = "A1";
+
+  function fetchLiveData(timeoutMs, done){
+    var finished = false;
+    var cbName = "__bjReportCb" + Date.now() + Math.floor(Math.random()*1e6);
+    var script = document.createElement("script");
+    var timer = setTimeout(function(){ finish(null); }, timeoutMs);
+    function cleanup(){
+      try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
+      if(script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+    }
+    function finish(result){
+      if(finished) return;
+      finished = true;
+      cleanup();
+      done(result);
+    }
+    window[cbName] = function(resp){
+      try{
+        var cellStr = resp.table.rows[0].c[0].v;
+        var data = JSON.parse(cellStr);
+        finish(data);
+      }catch(e){ finish(null); }
+    };
+    script.onerror = function(){ finish(null); };
+    script.src = "https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:json;responseHandler:"+cbName+"&range="+SHEET_RANGE;
+    document.body.appendChild(script);
+  }
+
+  var liveChip = document.getElementById("meta-live-chip");
+  fetchLiveData(6000, function(liveData){
+    if(!liveChip) return;
+    if(liveData && liveData.cards && liveData.subsSeries){
+      renderAll(liveData);
+      liveChip.hidden = false;
+      liveChip.dataset.state = "live";
+      liveChip.textContent = "실시간 데이터 반영됨";
+    } else {
+      liveChip.hidden = false;
+      liveChip.dataset.state = "offline";
+      liveChip.textContent = "최신 데이터를 불러오지 못해 배포 시점 데이터 표시 중";
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
