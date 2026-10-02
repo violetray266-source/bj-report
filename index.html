@@ -122,8 +122,6 @@
   .masthead p{margin:0;color:var(--fg-secondary);font-size:14.5px;line-height:1.6;max-width:70ch;}
   .meta-row{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:4px;}
   .meta-chip{font-size:12px;color:var(--fg-muted);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
-  .meta-chip[data-state="live"]{color:var(--good-ink);background:var(--good-wash);border-color:transparent;}
-  .meta-chip[data-state="offline"]{color:var(--caution-ink);background:var(--caution-wash);border-color:transparent;}
 
   /* ---- section heading ---- */
   .section-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:16px;}
@@ -226,10 +224,9 @@
     <h1>BJ 9개 채널 성장 가능성 리포트</h1>
     <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 · Studio 실측 8개 채널 + 실측 1개 채널(진혁쓰 JINHYUKss, 전환 12일차)</p>
     <div class="meta-row">
-      <span class="meta-chip" id="meta-asof-chip">데이터 조사 기준 ~2026-10-01</span>
-      <span class="meta-chip" id="meta-updated-chip">최신화 2026-10-02</span>
+      <span class="meta-chip" id="meta-asof-chip">전날(2026-10-01)까지 데이터 집계</span>
+      <span class="meta-chip" id="meta-updated-chip">배포 2026-10-02</span>
       <span class="meta-chip">추정·반올림 값 없음 — 전량 Studio 실측</span>
-      <span class="meta-chip" id="meta-live-chip" hidden></span>
     </div>
   </header>
 
@@ -648,8 +645,8 @@
   function renderMeta(meta){
     var a = document.getElementById("meta-asof-chip");
     var u = document.getElementById("meta-updated-chip");
-    if(a && meta.asOf) a.textContent = "데이터 조사 기준 ~"+meta.asOf;
-    if(u && meta.updated) u.textContent = "최신화 "+meta.updated;
+    if(a && meta.asOf) a.textContent = "전날("+meta.asOf+")까지 데이터 집계";
+    if(u && meta.updated) u.textContent = "배포 "+meta.updated;
   }
 
   function renderAll(data){
@@ -660,60 +657,13 @@
     renderMeta(data.meta);
   }
 
-  // initial paint: fallback data baked in at distribution time, so the file works fully offline
+  // this file is a static snapshot: numbers are baked in at deploy time (see FALLBACK_* above),
+  // refreshed by redeploying the file itself (no live fetch — deploy time IS the data's freshness).
   renderAll({
     subsLabels: FALLBACK_SUBS_LABELS, subsSeries: FALLBACK_SUBS_SERIES,
     viewsLabels: FALLBACK_VIEWS_LABELS, viewsSeries: FALLBACK_VIEWS_SERIES,
     cards: FALLBACK_CARDS, kpis: FALLBACK_KPIS, meta: FALLBACK_META
     // verdict/verdictTone omitted on purpose: the static HTML already shows the fallback wording, untouched
-  });
-
-  // ---------------- live data: fetch the latest figures from a published Google Sheet whenever this file is opened ----------------
-  // Updated daily by re-entering one JSON cell in that sheet — this HTML file itself never needs to be re-sent.
-  var SHEET_ID = "1MEy-WE0gGWYqJPFQAXaF-11DYKSWnq514izLbbM3mdY";
-  var SHEET_RANGE = "A1";
-
-  function fetchLiveData(timeoutMs, done){
-    var finished = false;
-    var cbName = "__bjReportCb" + Date.now() + Math.floor(Math.random()*1e6);
-    var script = document.createElement("script");
-    var timer = setTimeout(function(){ finish(null); }, timeoutMs);
-    function cleanup(){
-      try{ delete window[cbName]; }catch(e){ window[cbName] = undefined; }
-      if(script.parentNode) script.parentNode.removeChild(script);
-      clearTimeout(timer);
-    }
-    function finish(result){
-      if(finished) return;
-      finished = true;
-      cleanup();
-      done(result);
-    }
-    window[cbName] = function(resp){
-      try{
-        var cellStr = resp.table.rows[0].c[0].v;
-        var data = JSON.parse(cellStr);
-        finish(data);
-      }catch(e){ finish(null); }
-    };
-    script.onerror = function(){ finish(null); };
-    script.src = "https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?tqx=out:json;responseHandler:"+cbName+"&range="+SHEET_RANGE;
-    document.body.appendChild(script);
-  }
-
-  var liveChip = document.getElementById("meta-live-chip");
-  fetchLiveData(6000, function(liveData){
-    if(!liveChip) return;
-    if(liveData && liveData.cards && liveData.subsSeries){
-      renderAll(liveData);
-      liveChip.hidden = false;
-      liveChip.dataset.state = "live";
-      liveChip.textContent = "실시간 데이터 반영됨";
-    } else {
-      liveChip.hidden = false;
-      liveChip.dataset.state = "offline";
-      liveChip.textContent = "최신 데이터를 불러오지 못해 배포 시점 데이터 표시 중";
-    }
   });
 
 })();
