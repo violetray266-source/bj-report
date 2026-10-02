@@ -149,6 +149,8 @@
   .verdict-list li .num{color:var(--fg);font-weight:600;}
 
   /* ---- channel cards ---- */
+  .grade-legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin:0 0 14px;font-size:12.5px;color:var(--fg-secondary);}
+  .grade-legend span{display:inline-flex;align-items:center;gap:6px;}
   .legend-note{font-size:12.5px;color:var(--fg-muted);margin:-8px 0 16px;}
   .channel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
   .ch-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;min-width:0;}
@@ -224,7 +226,7 @@
     <span class="eyebrow">YouTube Studio 실측 데이터</span>
     <h1>BJ 채널 성장 리포트</h1>
     <p class="channel-note">총 9개 채널 · 대박TV · 홍백티비 · 돌벅지 · 불멸자 · 깡별 · 꽃태자 · 김외창 · 야광TV · 진혁쓰 JINHYUKss</p>
-    <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 · Studio 실측 8개 채널 + 실측 1개 채널(진혁쓰 JINHYUKss, 전환 12일차)</p>
+    <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 (진혁쓰 JINHYUKss는 전환일 9/20 기준 별도 비교)</p>
     <div class="meta-row">
       <span class="meta-chip" id="meta-asof-chip">전날(2026-10-01)까지 데이터 집계</span>
       <span class="meta-chip" id="meta-updated-chip">배포 2026-10-02</span>
@@ -272,6 +274,11 @@
 
   <section aria-label="채널별 성장 가능성 평가">
     <div class="section-head"><h2>채널별 성장 가능성 평가</h2></div>
+    <div class="grade-legend">
+      <span><span class="grade-badge" data-grade="상">상</span>구독자·조회수 모두 증가 + 최근 30일도 가속 중</span>
+      <span><span class="grade-badge" data-grade="중">중</span>플러스 성장이나 규모가 작거나 증가세 둔화</span>
+      <span><span class="grade-badge" data-grade="주의">주의</span>최근 30일 구독자 순감소 또는 반등 추세 미확인</span>
+    </div>
     <p class="legend-note">조회수 증가율(리니지 전 → 후) 기준 내림차순 · 구독자 수치는 현재(10/2) 스냅샷에서 실측 순증분을 역산한 리니지 전 추정 시점 기준</p>
 
     <div class="channel-grid" id="channel-grid"></div>
@@ -299,6 +306,7 @@
 
   <footer>
     <span>출처: YouTube Studio Advanced Mode (사용자 지정 기간 합계) · 전 채널 실측값, 추정·보간 없음</span>
+    <span>문의: 광훈 (kgh@dpot.dev)</span>
   </footer>
 
 </div>
@@ -319,6 +327,13 @@
     return getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim();
   }
 
+  // DAILY REFRESH CHECKLIST (read before swapping FALLBACK_* below):
+  // 1) chart/date labels (SUBS_LABELS, VIEWS_LABELS) and the masthead/meta chips must match the new as-of date
+  // 2) re-check that verdict text and each card's "reason" prose still match the new numbers —
+  //    numbers update automatically from the data below, but these are hand-written and can drift out of sync
+  //    (e.g. a "유일하게 순감소" claim that's no longer true once a channel recovers)
+  // 3) grades (상/중/주의) are assigned by hand per the legend shown above the channel grid — re-apply that
+  //    rubric to each channel's fresh numbers rather than carrying the previous day's grade forward
   var FALLBACK_SUBS_LABELS = ["조사 시작|(7/3)","리니지 시작|(8/12)","9/1","현재|(10/2)"];
   var FALLBACK_SUBS_SERIES = {
     "대박TV":[100.0,103.8,109.0,108.7],
