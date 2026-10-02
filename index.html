@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BJ 9개 채널 성장 리포트</title>
+<title>BJ 채널 성장 리포트</title>
 <style>
   /* ============ design tokens ============
      layout: masthead -> KPI strip -> verdict callouts -> channel card grid (sorted by 조회수 증가율) -> two indexed trend charts -> footnotes
@@ -120,6 +120,7 @@
   .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;}
   h1{font-size:clamp(26px,4.4vw,38px);line-height:1.18;font-weight:900;margin:0;text-wrap:balance;}
   .masthead p{margin:0;color:var(--fg-secondary);font-size:14.5px;line-height:1.6;max-width:70ch;}
+  .channel-note{margin:0;color:var(--fg-muted);font-size:12.5px;line-height:1.5;max-width:70ch;}
   .meta-row{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:4px;}
   .meta-chip{font-size:12px;color:var(--fg-muted);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
 
@@ -221,7 +222,8 @@
 
   <header class="masthead">
     <span class="eyebrow">YouTube Studio 실측 데이터</span>
-    <h1>BJ 9개 채널 성장 가능성 리포트</h1>
+    <h1>BJ 채널 성장 리포트</h1>
+    <p class="channel-note">총 9개 채널 · 대박TV · 홍백티비 · 돌벅지 · 불멸자 · 깡별 · 꽃태자 · 김외창 · 야광TV · 진혁쓰 JINHYUKss</p>
     <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 · Studio 실측 8개 채널 + 실측 1개 채널(진혁쓰 JINHYUKss, 전환 12일차)</p>
     <div class="meta-row">
       <span class="meta-chip" id="meta-asof-chip">전날(2026-10-01)까지 데이터 집계</span>
