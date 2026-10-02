@@ -119,8 +119,8 @@
   .masthead{display:flex;flex-direction:column;gap:10px;padding-bottom:28px;border-bottom:1px solid var(--border-strong);}
   .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;}
   h1{font-size:clamp(26px,4.4vw,38px);line-height:1.18;font-weight:900;margin:0;text-wrap:balance;}
-  .masthead p{margin:0;color:var(--fg-secondary);font-size:14.5px;line-height:1.6;white-space:nowrap;overflow-x:auto;}
-  .channel-note{margin:0;color:var(--fg-muted);font-size:12.5px;line-height:1.5;white-space:nowrap;overflow-x:auto;}
+  .masthead p{margin:0;color:var(--fg-secondary);font-size:14.5px;line-height:1.6;}
+  .channel-note{margin:0;color:var(--fg-muted);font-size:12.5px;line-height:1.5;}
   .meta-row{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:4px;}
   .meta-chip{font-size:12px;color:var(--fg-muted);background:var(--surface-2);border:1px solid var(--border);padding:4px 10px;border-radius:999px;}
 
@@ -217,9 +217,9 @@
 </style>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
-
 </head>
 <body>
+
 <div class="page">
 
   <header class="masthead">
@@ -228,9 +228,9 @@
     <p class="channel-note">총 9개 채널 · 대박TV · 홍백티비 · 돌벅지 · 불멸자 · 깡별 · 꽃태자 · 김외창 · 야광TV · 진혁쓰 JINHYUKss</p>
     <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 (진혁쓰 JINHYUKss는 전환일 9/20 기준 별도 비교)</p>
     <div class="meta-row">
-      <span class="meta-chip" id="meta-asof-chip">전날(2026-10-01)까지 데이터 집계</span>
+      <span class="meta-chip" id="meta-views-asof-chip">조회수·시청시간: 전날(2026-10-01)까지 실측 집계</span>
+      <span class="meta-chip" id="meta-subs-asof-chip">구독자 수: 오늘(2026-10-02) 기준 스냅샷</span>
       <span class="meta-chip" id="meta-updated-chip">배포 2026-10-02</span>
-      <span class="meta-chip">추정·반올림 값 없음 — 전량 Studio 실측</span>
     </div>
   </header>
 
@@ -293,7 +293,7 @@
     <div class="chart-grid">
       <div class="chart-card">
         <h3>구독자 수 지수 추이 (시작 = 100)</h3>
-        <p class="chart-sub">조사 시작(7/3) → 리니지 시작(8/12) → 9/1 → 현재(10/2)</p>
+        <p class="chart-sub">조사 시작(7/3) → 전환 전일(8/12) → 9/1 → 현재(10/2)</p>
         <div class="chart-wrap" id="wrap-subs"></div>
       </div>
       <div class="chart-card">
@@ -333,7 +333,7 @@
   //    (e.g. a "유일하게 순감소" claim that's no longer true once a channel recovers)
   // 3) grades (상/중/주의) are assigned by hand per the legend shown above the channel grid — re-apply that
   //    rubric to each channel's fresh numbers rather than carrying the previous day's grade forward
-  var FALLBACK_SUBS_LABELS = ["조사 시작|(7/3)","리니지 시작|(8/12)","9/1","현재|(10/2)"];
+  var FALLBACK_SUBS_LABELS = ["조사 시작|(7/3)","전환 전일|(8/12)","9/1","현재|(10/2)"];
   var FALLBACK_SUBS_SERIES = {
     "대박TV":[100.0,103.8,109.0,108.7],
     "홍백티비":[100.0,98.4,101.9,105.0],
@@ -658,9 +658,11 @@
   }
 
   function renderMeta(meta){
-    var a = document.getElementById("meta-asof-chip");
+    var v = document.getElementById("meta-views-asof-chip");
+    var s = document.getElementById("meta-subs-asof-chip");
     var u = document.getElementById("meta-updated-chip");
-    if(a && meta.asOf) a.textContent = "전날("+meta.asOf+")까지 데이터 집계";
+    if(v && meta.asOf) v.textContent = "조회수·시청시간: 전날("+meta.asOf+")까지 실측 집계";
+    if(s && meta.updated) s.textContent = "구독자 수: 오늘("+meta.updated+") 기준 스냅샷";
     if(u && meta.updated) u.textContent = "배포 "+meta.updated;
   }
 
@@ -683,6 +685,5 @@
 
 })();
 </script>
-
 </body>
 </html>
