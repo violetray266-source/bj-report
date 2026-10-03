@@ -229,7 +229,7 @@
     <p>리니지 클래식 방송 시작(2026-08-13) 전후 성과 비교 (진혁쓰 JINHYUKss는 전환일 9/20 기준 별도 비교)</p>
     <div class="meta-row">
       <span class="meta-chip" id="meta-views-asof-chip">조회수·시청시간: 전날(2026-10-01)까지 실측 집계</span>
-      <span class="meta-chip" id="meta-subs-asof-chip">구독자 수: 오늘(2026-10-02) 기준 스냅샷</span>
+      <span class="meta-chip" id="meta-subs-asof-chip">구독자 수: 2026-10-02 기준 스냅샷</span>
     </div>
   </header>
 
@@ -660,7 +660,7 @@
     var v = document.getElementById("meta-views-asof-chip");
     var s = document.getElementById("meta-subs-asof-chip");
     if(v && meta.asOf) v.textContent = "조회수·시청시간: 전날("+meta.asOf+")까지 실측 집계";
-    if(s && meta.updated) s.textContent = "구독자 수: 오늘("+meta.updated+") 기준 스냅샷";
+    if(s && meta.updated) s.textContent = "구독자 수: "+meta.updated+" 기준 스냅샷";
   }
 
   function renderAll(data){
