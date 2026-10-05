@@ -241,22 +241,22 @@
     </div>
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-label">합산 구독자 (리니지 전 → 현재)</div>
+        <div class="kpi-label">합산 구독자 (리니지 전 8/12 추정 → 현재 10/5)</div>
         <div class="kpi-value num" id="kpi-subs-val">127,001 <span class="arrow">→</span> 133,278</div>
         <span class="kpi-delta up" id="kpi-subs-delta">+4.9%</span>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">합산 조회수 (리니지 전 41일 → 후 40일)</div>
+        <div class="kpi-label">합산 조회수 (전 41일 7/3~8/12 → 후 40일 8/13~9/21, 고정 구간)</div>
         <div class="kpi-value num" id="kpi-views-val">879,031 <span class="arrow">→</span> 2,937,023</div>
         <span class="kpi-delta up" id="kpi-views-delta">+234%</span>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">합산 시청시간 h (전 → 후)</div>
+        <div class="kpi-label">합산 시청시간 h (전 7/3~8/12 → 후 8/13~9/21, 고정 구간)</div>
         <div class="kpi-value num" id="kpi-watch-val">101,538 <span class="arrow">→</span> 294,208</div>
         <span class="kpi-delta up" id="kpi-watch-delta">+190%</span>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">최근 30일 조회수 (직전 30일 → 최근 30일)</div>
+        <div class="kpi-label">최근 30일 조회수 (직전 30일 8/5~9/3 → 최근 30일 9/4~10/3)</div>
         <div class="kpi-value num" id="kpi-recent-val">1,970,658 <span class="arrow">→</span> 1,957,679</div>
         <span class="kpi-delta down" id="kpi-recent-delta">-0.7%</span>
       </div>
@@ -333,6 +333,9 @@
   //    (e.g. a "유일하게 순감소" claim that's no longer true once a channel recovers)
   // 3) grades (상/중/주의) are assigned by hand per the legend shown above the channel grid — re-apply that
   //    rubric to each channel's fresh numbers rather than carrying the previous day's grade forward
+  // 4) the 4 KPI card labels (<div class="kpi-label">...) now spell out explicit dates — update the
+  //    "현재" date (kpi-subs) and the rolling "직전 30일 → 최근 30일" date range (kpi-recent) each refresh;
+  //    the views/watch labels' 7/3~8/12 → 8/13~9/21 dates are fixed and never change
   var FALLBACK_SUBS_LABELS = ["조사 시작|(7/3)","리니지 시작|(8/12)","9/1","현재|(10/5)"];
   var FALLBACK_SUBS_SERIES = {
     "대박TV":[100.0,103.8,109.0,108.7],
